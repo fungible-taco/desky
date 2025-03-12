@@ -20,7 +20,7 @@ def move_desk(mac_address, height_mm=750):
     
     # Step 2: Send command to move desk
     print(f"Moving desk to {height_mm}mm...")
-    subprocess.run(["linak-controller", "--mac-address", mac_address, "--move-to", str(height_mm)])~
+    subprocess.run(["linak-controller", "--mac-address", mac_address, "--move-to", str(height_mm)])
     
     # Step 3: Wait for movement to complete
     print("Waiting for desk to reach target height...")
