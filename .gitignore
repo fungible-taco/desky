@@ -6,3 +6,10 @@ app_claude.py
 __pycache__/app.cpython-313.pyc
 .gitignore
 main.py
+__pycache__/cal.cpython-313.pyc
+.gitignore
+.gitignore
+__pycache__/logger.cpython-313.pyc
+__pycache__/desk_control.cpython-313.pyc
+logs/desk_automation_2025-03-14.log
+desk-control.py

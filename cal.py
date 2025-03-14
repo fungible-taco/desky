@@ -1,36 +1,38 @@
 import os
-from app import logger
+from logger import get_logger
 import time
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
 from gcsa.event import Event
 from gcsa.google_calendar import GoogleCalendar
-from gcsa.recurrence import Recurrence, DAILY, SU, SA
-from beautiful_date import Jan, Apr, Mar
+import pytz
+#from gcsa.recurrence import Recurrence, DAILY, SU, SA
+#from beautiful_date import Jan, Apr, Mar
 
 
+logger = get_logger(__name__)
 gcpath = os.getenv("credentials_path")
 lookahead_mins = os.getenv("lookahead_mins")
 target_color_id = os.getenv("target_color_id")
+mins_before_event = os.getenv("mins_before_event")
 
 gc = GoogleCalendar(credentials_path=gcpath)
 
 def get_upcoming_events (minutres_ahead = lookahead_mins):
     try:
-        now = datetime.now()
+        now = datetime.now(pytz.FixedOffset(120))
         end_time = now + timedelta(minutes = int(minutres_ahead))
 
         logger.info(f"Fetching events from now until {end_time}")
         
         events = list(gc.get_events(now, end_time))
         logger.info(f"Found {len(events)} upcoming events")
-        
+
         return events
     except Exception as e:
         logger.error(f"Error fetching events: {e}")
         return []
-#
-get_upcoming_events()
+
 
 def should_raise_desk(event):
     if event.color_id == target_color_id:
@@ -38,74 +40,78 @@ def should_raise_desk(event):
         return True
     return False
 
-#
-events = get_upcoming_events()
-#
-for event in events:
-    should_raise_desk(event)
+
+def calculate_raise_time(event):
+
+    raise_time = event.start - timedelta(minutes = int(mins_before_event))
+    return raise_time
 
 
-
+def time_until_raise(raise_time):
+   
+    now = datetime.now(pytz.FixedOffset(120))
+    time_diff = raise_time - now
+    return time_diff.total_seconds()
 
 
 ##############################
-start_date=(12 / Mar / 2025)[9:00]
-end_date=(14 / Mar / 2025)[9:00]
+# start_date=(12 / Mar / 2025)[9:00]
+# end_date=(14 / Mar / 2025)[9:00]
 
-events = list(gc.get_events(start_date, end_date))
+# events = list(gc.get_events(start_date, end_date))
   
 
-for event in events:
-    print(event, event.color_id)
-    print(event.color_id)
+# for event in events:
+#     print(event, event.color_id)
+#     print(event.color_id)
 
-##############################
-for event in gc:
-    print(event)
+# ##############################
+# for event in gc:
+#     print(event)
 
-start_date=(1 / Jan / 2025)[9:00]
-end_date=(1 / Jan / 2026)[9:00]
+# start_date=(1 / Jan / 2025)[9:00]
+# end_date=(1 / Jan / 2026)[9:00]
 
 
 
-try:
-    colors = gc.get_colors()
-    color_map = colors.get('event', {})
-    print("Available calendar colors:")
-    for color_id, color_info in color_map.items():
-        print(f"Color ID: {color_id}, Background: {color_info['background']}")
-except Exception as e:
-    print(f"Error getting colors: {e}")
-    color_map = {}
+# try:
+#     colors = gc.get_colors()
+#     color_map = colors.get('event', {})
+#     print("Available calendar colors:")
+#     for color_id, color_info in color_map.items():
+#         print(f"Color ID: {color_id}, Background: {color_info['background']}")
+# except Exception as e:
+#     print(f"Error getting colors: {e}")
+#     color_map = {}
 
-# Get all events
-print("\nUpcoming events with colors:")
-print("-" * 60)
+# # Get all events
+# print("\nUpcoming events with colors:")
+# print("-" * 60)
 
-try:
-    events = list(gc.get_events(start_date, end_date))
+# try:
+#     events = list(gc.get_events(start_date, end_date))
     
-    if not events:
-        print("No events found in the next 30 days.")
-    else:
-        for event in events:
-            color_id = event.color_id
-            color_hex = color_map.get(color_id, {}).get('background', 'No color') if color_id else 'Default'
+#     if not events:
+#         print("No events found in the next 30 days.")
+#     else:
+#         for event in events:
+#             color_id = event.color_id
+#             color_hex = color_map.get(color_id, {}).get('background', 'No color') if color_id else 'Default'
             
-            # Format dates properly
-            start_time = event.start.strftime('%Y-%m-%d %H:%M') if hasattr(event.start, 'strftime') else 'Unknown'
-            end_time = event.end.strftime('%Y-%m-%d %H:%M') if hasattr(event.end, 'strftime') else 'Unknown'
+#             # Format dates properly
+#             start_time = event.start.strftime('%Y-%m-%d %H:%M') if hasattr(event.start, 'strftime') else 'Unknown'
+#             end_time = event.end.strftime('%Y-%m-%d %H:%M') if hasattr(event.end, 'strftime') else 'Unknown'
             
-            print(f"Event: {event.summary}")
-            print(f"  Start: {start_time}")
-            print(f"  End: {end_time}")
-            print(f"  Color ID: {color_id or 'Default'}")
-            print(f"  Color Hex: {color_hex}")
-            print(f"  Location: {event.location or 'No location'}")
-            print (f"  Recurrance {event.recurrence}")
-            print("-" * 60)
-except Exception as e:
-    print(f"Error retrieving events: {e}")
+#             print(f"Event: {event.summary}")
+#             print(f"  Start: {start_time}")
+#             print(f"  End: {end_time}")
+#             print(f"  Color ID: {color_id or 'Default'}")
+#             print(f"  Color Hex: {color_hex}")
+#             print(f"  Location: {event.location or 'No location'}")
+#             print (f"  Recurrance {event.recurrence}")
+#             print("-" * 60)
+# except Exception as e:
+#     print(f"Error retrieving events: {e}")
 
 
 

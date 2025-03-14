@@ -1,15 +1,55 @@
 #!/usr/bin/env python3
 from dotenv import load_dotenv
+from logger import get_logger
 import os
 import subprocess
 import argparse
 import time
 
+
+logger = get_logger(__name__)
 load_dotenv()
 mac_address = os.getenv("mac_address")
-height_mm = 750
+standing_height = os.getenv("standing_height")
+sitting_height = os.getenv("sitting_height")
+#subprocess.run(["linak-controller", "--mac-address", mac_address, "--move-to", str(standing_height)])
 
-subprocess.run(["linak-controller", "--mac-address", mac_address, "--move-to", str(height_mm)])
+def raise_desk():
+    """
+    Raise the standing desk to the configured height.
+    """
+    try:
+        logger.info(f"Raising desk to {standing_height}mm")
+        result = subprocess.run(["linak-controller", "--mac-address", mac_address, "--move-to", str(standing_height)],
+            capture_output=True,
+            text=True
+        )
+        
+        if result.returncode == 0:
+            logger.info("Desk raised successfully")
+        else:
+            logger.error(f"Failed to raise desk: {result.stderr}")
+    except Exception as e:
+        logger.error(f"Error raising desk: {e}")
+
+
+def lower_desk():
+    """
+    Raise the standing desk to the configured height.
+    """
+    try:
+        logger.info(f"Lowering desk to {sitting_height}mm")
+        result = subprocess.run(["linak-controller", "--mac-address", mac_address, "--move-to", str(sitting_height)],
+            capture_output=True,
+            text=True
+        )
+        
+        if result.returncode == 0:
+            logger.info("Desk lowered successfully")
+        else:
+            logger.error(f"Failed to lower desk: {result.stderr}")
+    except Exception as e:
+        logger.error(f"Error lowering desk: {e}")
 
 # def move_desk(mac_address, height_mm=750):
 #     """
@@ -45,3 +85,4 @@ subprocess.run(["linak-controller", "--mac-address", mac_address, "--move-to", s
     
 #     # Call the main function with the provided arguments
 #     move_desk(args.mac_address, args.height)
+
