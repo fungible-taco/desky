@@ -1,3 +1,8 @@
 .env
 .credentials/secret.json
 .credentials/token.pickle
+desk_automation.log
+app_claude.py
+__pycache__/app.cpython-313.pyc
+.gitignore
+main.py

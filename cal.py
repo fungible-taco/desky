@@ -1,12 +1,65 @@
+import os
+from app import logger
+import time
+from datetime import datetime, timedelta
+from dotenv import load_dotenv
 from gcsa.event import Event
 from gcsa.google_calendar import GoogleCalendar
 from gcsa.recurrence import Recurrence, DAILY, SU, SA
 from beautiful_date import Jan, Apr, Mar
 
 
+gcpath = os.getenv("credentials_path")
+lookahead_mins = os.getenv("lookahead_mins")
+target_color_id = os.getenv("target_color_id")
 
-gc = GoogleCalendar(credentials_path='/Users/mitrev/apps/desky/.credentials/secret.json')
+gc = GoogleCalendar(credentials_path=gcpath)
 
+def get_upcoming_events (minutres_ahead = lookahead_mins):
+    try:
+        now = datetime.now()
+        end_time = now + timedelta(minutes = int(minutres_ahead))
+
+        logger.info(f"Fetching events from now until {end_time}")
+        
+        events = list(gc.get_events(now, end_time))
+        logger.info(f"Found {len(events)} upcoming events")
+        
+        return events
+    except Exception as e:
+        logger.error(f"Error fetching events: {e}")
+        return []
+#
+get_upcoming_events()
+
+def should_raise_desk(event):
+    if event.color_id == target_color_id:
+        logger.info(f"Found red meeting {event.summary}")
+        return True
+    return False
+
+#
+events = get_upcoming_events()
+#
+for event in events:
+    should_raise_desk(event)
+
+
+
+
+
+##############################
+start_date=(12 / Mar / 2025)[9:00]
+end_date=(14 / Mar / 2025)[9:00]
+
+events = list(gc.get_events(start_date, end_date))
+  
+
+for event in events:
+    print(event, event.color_id)
+    print(event.color_id)
+
+##############################
 for event in gc:
     print(event)
 
@@ -76,14 +129,3 @@ except Exception as e:
 
 # for event in calendar:
 #     print(event)
-
-
-start_date=(12 / Mar / 2025)[9:00]
-end_date=(14 / Mar / 2025)[9:00]
-
-events = list(gc.get_events(start_date, end_date))
-  
-
-for event in events:
-    print(event, event.color_id)
-    print(event.color_id)
