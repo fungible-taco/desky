@@ -1,4 +1,5 @@
 import logging
+import time
 from datetime import datetime, timedelta
 from cal import get_upcoming_events, should_raise_desk, calculate_raise_time, time_until_raise
 from logger import get_logger
@@ -7,12 +8,12 @@ from desk_control import raise_desk
 
 logger = get_logger(__name__)
 
-# Set up logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    filename='desk_automation.log'
-)
+# # Set up logging
+# logging.basicConfig(
+#     level=logging.INFO,
+#     format='%(asctime)s - %(levelname)s - %(message)s',
+#     filename='desk_automation.log'
+# )
 logger = logging.getLogger('desk_automation')
 
 
@@ -46,6 +47,11 @@ def main():
         seconds_until_raise = time_until_raise(next_raise_time)
         
         if 0 <= seconds_until_raise <= 60:  # If we're within 1 minute of target raise time
+            logger.info(f"It's time to raise desk for meeting: {next_red_meeting.summary}")
+            raise_desk()
+        elif seconds_until_raise <= 15 * 60:  # If it's within 15 minutes
+            logger.info(f"Waiting {seconds_until_raise:.1f} seconds to raise desk for: {next_red_meeting.summary}")
+            time.sleep(seconds_until_raise)
             logger.info(f"It's time to raise desk for meeting: {next_red_meeting.summary}")
             raise_desk()
         else:
